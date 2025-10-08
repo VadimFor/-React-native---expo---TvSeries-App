@@ -1,9 +1,15 @@
-import { Stack } from "expo-router";
-import { Provider as PaperProvider } from "react-native-paper";
-import "../style/global.css";
-import { initDb } from "@/sqlite";
-import { useEffect, useState } from "react";
-import { ActivityIndicator, View } from "react-native";
+import React, { useEffect, useState } from 'react';
+import '../global.css';
+
+import { View, ActivityIndicator } from 'react-native';
+import { Provider as PaperProvider } from 'react-native-paper';
+import { Stack } from 'expo-router';
+import { initDb } from '@/sqlite';
+
+export const unstable_settings = {
+  // Ensure that reloading on `/modal` keeps a back button present.
+  initialRouteName: '(tabs)',
+};
 
 export default function RootLayout() {
   const [ready, setReady] = useState(false);
