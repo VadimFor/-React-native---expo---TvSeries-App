@@ -1,9 +1,12 @@
 {
   "expo": {
     "name": "OnlySeries",
+    "displayName": "OnlySeries",
     "slug": "OnlySeries",
     "version": "1.0.0",
     "scheme": "OnlySeries",
+    "description": "Track, save and explore your favorite TV series.",
+    "privacy": "public",
     "platforms": [
       "ios",
       "android"
