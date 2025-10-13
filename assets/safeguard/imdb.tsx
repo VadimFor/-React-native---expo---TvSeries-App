@@ -1,5 +1,5 @@
 // imdb.tsx
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useState } from 'react';
 import {
   Text,
   FlatList,
@@ -8,48 +8,36 @@ import {
   TouchableOpacity,
   UIManager,
   Platform,
-} from "react-native";
-import { WebView } from "react-native-webview";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { db_upsertShows } from "@/sqlite";
-import {
-  getTextClass,
-  parseDate,
-  json_parse_top100,
-  Show,
-} from "@/props/props";
-import { logDbState, useShowStore } from "@/███ＳＴＯＲＥ████/show_Store";
-import { ShowCard } from "../components/showcard";
+} from 'react-native';
+import { WebView } from 'react-native-webview';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { db_upsertShows } from '@/sqlite';
+import { getTextClass, parseDate, json_parse_top100, Show } from '@/props/props';
+import { logDbState, useShowStore } from '@/_STORE/show_Store';
+import { ShowCard } from '../components/showcard';
 
 // Enable LayoutAnimation on Android
-if (
-  Platform.OS === "android" &&
-  UIManager.setLayoutAnimationEnabledExperimental
-) {
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
 export default function Imdb() {
   const {
     shows,
-    favorites,
-    saved,
+    ids_favorites: favorites,
+    ids_saved: saved,
     toggleFavorite,
     toggleSave,
     store_setShows,
     fetchAll,
   } = useShowStore();
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [sortBy, setSortBy] = useState<"rank" | "releaseDate">("rank");
+  const [sortBy, setSortBy] = useState<'rank' | 'releaseDate'>('rank');
   const [loaded, setLoaded] = useState(false);
 
   const renderItem = useCallback(
     ({ item }: { item: Show }) => (
-      <ShowCard
-        item={item}
-        expandedId={expandedId}
-        setExpandedId={setExpandedId}
-      />
+      <ShowCard item={item} expandedId={expandedId} setExpandedId={setExpandedId} />
     ),
     [expandedId, favorites, saved, toggleFavorite, toggleSave]
   );
@@ -59,8 +47,8 @@ export default function Imdb() {
       <SafeAreaView className="flex-1 items-center justify-center bg-white">
         <WebView
           source={{
-            uri: "https://www.imdb.com/chart/tvmeter/?language=en-US",
-            headers: { "Accept-Language": "en-US,en;q=0.9" },
+            uri: 'https://www.imdb.com/chart/tvmeter/?language=en-US',
+            headers: { 'Accept-Language': 'en-US,en;q=0.9' },
           }}
           injectedJavaScript={`
             const check = setInterval(() => {
@@ -91,7 +79,7 @@ export default function Imdb() {
 
   // Sort shows
   const sortedShows = [...shows].sort((a, b) => {
-    if (sortBy === "releaseDate") {
+    if (sortBy === 'releaseDate') {
       const da = parseDate(a.releaseDate);
       const db = parseDate(b.releaseDate);
       if (da && db) return db.getTime() - da.getTime();
@@ -109,25 +97,24 @@ export default function Imdb() {
   return (
     <View className="flex-1 bg-gray-300">
       {/* Header */}
-      <View className="bg-emerald-500 pt-10 px-5 pb-2 ">
-        <Text className="text-white text-3xl font-bold">Popular</Text>
+      <View className="bg-emerald-500 px-5 pb-2 pt-10 ">
+        <Text className="text-3xl font-bold text-white">Popular</Text>
       </View>
 
       {/* Sort Toggle */}
       <View className="flex-row justify-between bg-white px-4 py-2">
-        <View className="bg-gray-300 px-3 rounded-full items-center justify-center">
-          <Text className="text-gray-800 text-xs font-semibold">
-            Sorted by: {sortBy === "rank" ? "Rank" : "Release Date"}
+        <View className="items-center justify-center rounded-full bg-gray-300 px-3">
+          <Text className="text-xs font-semibold text-gray-800">
+            Sorted by: {sortBy === 'rank' ? 'Rank' : 'Release Date'}
           </Text>
         </View>
 
         <TouchableOpacity
-          className="bg-emerald-500 px-4 py-2 rounded-full shadow-lg"
-          onPress={() => setSortBy(sortBy === "rank" ? "releaseDate" : "rank")}
-          activeOpacity={0.8}
-        >
-          <Text className="text-white font-semibold text-sm">
-            Sort by {sortBy === "rank" ? "Release Date" : "Rank"}
+          className="rounded-full bg-emerald-500 px-4 py-2 shadow-lg"
+          onPress={() => setSortBy(sortBy === 'rank' ? 'releaseDate' : 'rank')}
+          activeOpacity={0.8}>
+          <Text className="text-sm font-semibold text-white">
+            Sort by {sortBy === 'rank' ? 'Release Date' : 'Rank'}
           </Text>
         </TouchableOpacity>
       </View>

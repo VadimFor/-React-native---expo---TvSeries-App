@@ -1,30 +1,24 @@
 
-
+//Info de la serie
 export type Show = {
-  rank?: number;
-  prevRank?: number;
   id: string;
+  rank?: number;
   title: string;
-  year?: number;
-  releaseDate?: string;
   image?: string;
   rating?: number;
   votes?: number;
-  titleGenres?: string[];
-  certificate?: string;
+  releaseDate?: string;
   plot?: string;
-  type?: string;
-  episodes?: number; 
+  titleGenres?: string[];
+  episodes?: number;
+  seasons?: number;
+  trailer?: string;
 };
 
+//Para cuando buscas información adicional
 export type Searched_Show = {
   id: string;
-  imageType: string;
   titleNameText: string;
-  titlePosterImageModel_url?: string;
-  titleReleaseText?: number;
-  titleTypeText?: string;
-  topCredits?: string[];
 };
 
 
@@ -51,24 +45,22 @@ export const json_parse_top100 = (rawJson: string): Show[] => {
       return edges.map((e: any): Show => {
         const node = e.node;
         return {
-          rank: e.currentRank,
-          prevRank: e.previousRank,
           id: node?.id,
+          rank: e.currentRank,
           title: node?.titleText?.text ?? "Unknown",
-          year: node?.releaseYear?.year,
-          releaseDate: node?.releaseDate
-            ? `${node.releaseDate.day ?? ""}/${node.releaseDate.month ?? ""}/${node.releaseDate.year ?? ""}`
-            : undefined,
           image: node?.primaryImage?.url,
           rating: node?.ratingsSummary?.aggregateRating,
           votes: node?.ratingsSummary?.voteCount,
+          releaseDate: node?.releaseDate
+            ? `${node.releaseDate.day ?? ""}/${node.releaseDate.month ?? ""}/${node.releaseDate.year ?? ""}`
+            : undefined,
+          plot: node?.plot?.plotText?.plainText,
           titleGenres: Array.isArray(node?.titleGenres?.genres)
             ? node.titleGenres.genres.map((g: any) => g?.genre?.text ?? "")
             : [],
-          certificate: node?.certificate?.rating,
-          plot: node?.plot?.plotText?.plainText,
-          type: node?.titleType?.text,
           episodes: node?.episodes?.episodes?.total,
+          seasons: undefined,
+          trailer: undefined
         };
       });
     } catch (err) {
@@ -76,8 +68,6 @@ export const json_parse_top100 = (rawJson: string): Show[] => {
       return [];
     }
   };
-
-
 
 export const json_parse_search = (rawJson: string): Searched_Show[] => {
     try {
@@ -92,12 +82,7 @@ export const json_parse_search = (rawJson: string): Searched_Show[] => {
         .map(
           (e: any): Searched_Show => ({
             id: e.id,
-            imageType: e.imageType,
             titleNameText: e.titleNameText,
-            titlePosterImageModel_url: e.titlePosterImageModel?.url ?? null,
-            titleReleaseText: e.titleReleaseText ?? "",
-            titleTypeText: e.titleTypeText ?? "",
-            topCredits: e.topCredits ?? [],
           })
         );
     } catch (err) {
@@ -105,3 +90,5 @@ export const json_parse_search = (rawJson: string): Searched_Show[] => {
       return [];
     }
   };
+
+

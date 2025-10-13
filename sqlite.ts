@@ -20,7 +20,7 @@ export async function initDb(): Promise<SQLite.SQLiteDatabase> {
     const dbFile = new File(sqliteDir, "recetario2.db");
     console.log("📂 DB file URI:", dbFile.uri);
 
-        // 🚨 Clear old tables (dev only)
+    // 🚨 Clear old tables (dev only)
     //await db.execAsync(`DROP TABLE IF EXISTS shows;`);
     //await db.execAsync(`DROP TABLE IF EXISTS Favorites;`);
     //await db.execAsync(`DROP TABLE IF EXISTS saved;`);
@@ -30,18 +30,16 @@ export async function initDb(): Promise<SQLite.SQLiteDatabase> {
       CREATE TABLE IF NOT EXISTS shows (
         id TEXT PRIMARY KEY,
         rank INTEGER,
-        prevRank INTEGER,
         title TEXT,
-        year INTEGER,
-        releaseDate TEXT,
         image TEXT,
         rating REAL,
         votes INTEGER,
-        titleGenres TEXT,
-        certificate TEXT,
+        releaseDate TEXT,
         plot TEXT,
-        type TEXT,
-        episodes INTEGER
+        titleGenres TEXT,
+        episodes INTEGER,
+        seasons INTEGER,
+        trailer TEXT
       );
     `);
 
@@ -79,52 +77,47 @@ export async function db_cleardb(): Promise<void> {
 }
 
 // Insert or update a single show
-export async function upsertShow(show: any) {
+export async function db_upsertShow(show: Show) {
   try {
-      await executeSql(
-        `INSERT INTO shows 
-          (id, rank, prevRank, title, year, releaseDate, image, rating, votes, titleGenres, certificate, plot, type, episodes) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ON CONFLICT(id) DO UPDATE SET 
-            rank = excluded.rank,
-            prevRank = excluded.prevRank,
-            title = excluded.title,
-            year = excluded.year,
-            releaseDate = excluded.releaseDate,
-            image = excluded.image,
-            rating = excluded.rating,
-            votes = excluded.votes,
-            titleGenres = excluded.titleGenres,
-            certificate = excluded.certificate,
-            plot = excluded.plot,
-            type = excluded.type,
-            episodes = excluded.episodes;`,
-        [
-          show.id,
-          show.rank,
-          show.prevRank,
-          show.title,
-          show.year,
-          show.releaseDate,
-          show.image,
-          show.rating,
-          show.votes,
-          JSON.stringify(show.titleGenres ?? []), //JSON.parse(titleGenres) para leer
-          show.certificate,
-          show.plot,
-          show.type,
-          show.episodes,
-        ]
-      );
-
-    } catch (err) {
+    await executeSql(
+      `INSERT INTO shows 
+        (id, rank, title, image, rating, votes, releaseDate, plot, titleGenres, episodes, seasons, trailer)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ON CONFLICT(id) DO UPDATE SET
+        rank = excluded.rank,
+        title = excluded.title,
+        image = excluded.image,
+        rating = excluded.rating,
+        votes = excluded.votes,
+        releaseDate = excluded.releaseDate,
+        plot = excluded.plot,
+        titleGenres = excluded.titleGenres,
+        episodes = excluded.episodes,
+        seasons = excluded.seasons,
+        trailer = excluded.trailer;`,
+      [
+        show.id,
+        show.rank ?? null,
+        show.title ?? "",
+        show.image ?? null,
+        show.rating ?? null,
+        show.votes ?? null,
+        show.releaseDate ?? null,
+        show.plot ?? null,
+        JSON.stringify(show.titleGenres ?? []), // store as JSON
+        show.episodes ?? null,
+        show.seasons ?? null,
+        show.trailer ?? null,
+      ]
+    );
+  } catch (err) {
     console.error("❌ Error upserting show:", show?.id, err);
   }
 }
 // Helper: upsert many at once
 export async function db_upsertShows(shows: Show[]) {
   try {
-    await Promise.all(shows.map((s) => upsertShow(s)));
+    await Promise.all(shows.map((s) => db_upsertShow(s)));
 
     // 🔎 Check how many got inserted
     const rows = await queryAll("SELECT * FROM shows");
